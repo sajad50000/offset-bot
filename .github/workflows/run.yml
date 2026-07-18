@@ -1,0 +1,49 @@
+name: Run Flask Server 24/7
+
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: تثبيت Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: تثبيت المكتبات
+        run: |
+          pip install flask flask-cors pefile capstone requests pyngrok
+      
+      - name: تشغيل السيرفر مع ngrok
+        run: |
+          python -c "
+          import os, threading, time, requests
+          from pyngrok import ngrok
+          
+          import subprocess
+          def run_flask():
+              subprocess.run(['python3', 'server.py'])
+          
+          thread = threading.Thread(target=run_flask, daemon=True)
+          thread.start()
+          
+          public_url = ngrok.connect(5000)
+          print('✅ الرابط العام:', public_url)
+          
+          TOKEN = '8602190557:AAGXAF9elW1heKnZhNTxUSxPkkQzd45RagM'
+          CHAT_ID = '755037218'
+          requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+                        data={'chat_id': CHAT_ID,
+                              'text': f'🚀 السيرفر يعمل على:\n{public_url}'})
+          
+          while True:
+              time.sleep(60)
+          "
