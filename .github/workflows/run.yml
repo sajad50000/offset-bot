@@ -3,8 +3,6 @@ name: Run Flask Server 24/7
 on:
   push:
     branches: [ "main" ]
-  schedule:
-    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,16 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: تثبيت Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
       
-      - name: تثبيت المكتبات
+      - name: Install Dependencies
         run: |
           pip install flask flask-cors pefile capstone requests pyngrok
       
-      - name: تشغيل السيرفر مع ngrok
+      - name: Run Server with ngrok
         run: |
           python -c "
           import os, threading, time, requests
